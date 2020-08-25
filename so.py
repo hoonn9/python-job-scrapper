@@ -11,7 +11,7 @@ def get_so_pages():
     response = requests.get(SO_URL)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, "html.parser")
-        job_links = soup.find("div", attrs={"class": "pagination"}).findAll(
+        job_links = soup.find("div", attrs={"class": "s-pagination"}).findAll(
             "a", {"class": "job-link"}
         )
         job_links = job_links[:-1]
@@ -26,24 +26,18 @@ def get_so_pages():
 
 def extract_job(job_html):
     title = (
-        job_html.find("div", {"class": "-title"})
-        .find("h2", {"class": "job-details__spaced"})
-        .find("a")["title"]
+        job_html.find("h2").find("a")["title"]
     )
-    subtitle = list(
-        job_html.find("div", {"class": "-company"}
-                      ).findAll("span", recursive=False)
-    )
-    company = subtitle[0].get_text(strip=True)
-    location = subtitle[1].get_text(strip=True)
+    company, lcoation = job_html.find("h3").findAll("span", recursive=False)
+    company = company.get_text(strip=True)
+    location = lcoation.get_text(strip=True)
     location = location.strip("-").strip(" \r").strip("\n")
-    link = job_html.find(
-        "h2", {"class": "job-details__spaced"}).find("a")["href"]
+    job_id = job_html['data-jobid']
     job = {
         "title": title,
         "company": company,
         "location": location,
-        "apply_link": f"https://stackoverflow.com{link}",
+        "apply_link": f"https://stackoverflow.com/jobs/{job_id}",
     }
     return job
 
